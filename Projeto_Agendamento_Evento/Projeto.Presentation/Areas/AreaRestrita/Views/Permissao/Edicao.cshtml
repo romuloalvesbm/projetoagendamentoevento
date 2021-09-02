@@ -1,0 +1,141 @@
+﻿@model Projeto.Presentation.Areas.AreaRestrita.Models.PermissaoEdicaoModel
+
+@{
+    Layout = "~/Areas/AreaRestrita/Views/Shared/_Layout.cshtml";
+}
+
+@section styles{
+    <link href="~/css/tree.css" rel="stylesheet" />
+}
+
+@section scripts{
+
+    <script>
+
+        $('#btnBuscar').click(function () {
+            var ddlValue = $('#ddlPerfil').val();
+            var path = '@Url.Content("/AreaRestrita/Permissao/Edicao/")' + ddlValue
+            $(this).attr("href", path);
+        });
+
+        (function ($) {
+            function Tree() {
+                var $this = this;
+
+                function treeNodeClick() {
+                    $(document).on('click', '.tree li input[type="checkbox"]', function () {
+                        $(this).closest('li').find('ul input[type="checkbox"]').prop('checked', $(this).is(':checked'));
+                    }).on('click', '.node-item', function () {
+                        var parentNode = $(this).parents('.tree ul');
+                        if ($(this).is(':checked')) {
+                            parentNode.find('li .parent').prop('checked', true);
+                        } else {
+                            var elements = parentNode.find('ul input[type="checkbox"]:checked');
+                            if (elements.length == 0) {
+                                parentNode.find('li .parent').prop('checked', false);
+                            }
+                        }
+                    });
+                };
+
+                $this.init = function () {
+                    treeNodeClick();
+                }
+            }
+            $(function () {
+                var self = new Tree();
+                self.init();
+            })
+        }(jQuery))
+
+    </script>
+}
+
+<div class="jumbotron" style="padding: 10px; background-color: white">
+    <h4>Permissão</h4>
+    <hr />
+
+
+    @using (Html.BeginForm())
+    {
+        <!-- campo nome -->
+        <div class="form-group row">
+            <div class="col-md-3">
+                <label>Perfil:</label>
+                @Html.DropDownListFor(model => model.IdPerfil,
+                                      Model.Perfis,
+                                      new
+                                            {
+                                                @class = "custom-select",
+                                                @id = "ddlPerfil"
+                                            })
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.IdPerfil)
+                </span>
+            </div>
+
+            <div class="col-md-1">
+                <a class="btn btn-info btn-sm" style="margin-top: 2.1rem !important" id="btnBuscar">
+                    <i class="fas fa-search fa-lg"></i>
+                </a>
+            </div>
+        </div>
+
+        <hr />
+
+        <div class="form-group row">
+            <div class="col-md-12">
+                <div class="tree">
+
+                    @for (int i = 0; i < Model.PermissoesMenu.Count; i++)
+                    {
+                        <ul>
+                            <li>
+
+                                @Html.CheckBoxFor(m => Model.PermissoesMenu[i].Check,
+                                                       new
+                                                            {
+                                                                @class = "tree-checkbox parent",
+                                                                @id = @Model.PermissoesMenu[i].IdPermissao
+                                                            })
+                                <span> @Model.PermissoesMenu[i].Descricao </span>
+                                @Html.HiddenFor(m => Model.PermissoesMenu[i].IdPermissao)
+                                @Html.HiddenFor(m => Model.PermissoesMenu[i].IdPai)
+                                @Html.HiddenFor(m => Model.PermissoesMenu[i].Descricao)
+                                <br />
+
+                                <ul>
+
+                                    @for (int j = 0; j < Model.PermissoesMenu[i].PermissaoSubMenu.Count(); j++)
+                                    {
+                                    <li>
+                                        @Html.CheckBoxFor(m => Model.PermissoesMenu[i].PermissaoSubMenu[j].Check,
+                                                           new
+                                                           {
+                                                               @class = "tree-checkbox node-item",
+                                                               @id = @Model.PermissoesMenu[i].IdPermissao + "" + j
+                                                           })
+                                        <span> @Model.PermissoesMenu[i].PermissaoSubMenu[j].Descricao </span>
+                                        @Html.HiddenFor(m => Model.PermissoesMenu[i].PermissaoSubMenu[j].IdPermissao)
+                                        @Html.HiddenFor(m => Model.PermissoesMenu[i].PermissaoSubMenu[j].IdPai)
+                                        @Html.HiddenFor(m => Model.PermissoesMenu[i].PermissaoSubMenu[j].Descricao)
+                                        <br />
+                                    </li>
+                                    }
+                                </ul>
+                            </li>
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" id="btnCadastrar" class="btn btn-success btn-sm">
+                <i class="fas fa-save fa-lg"></i> Salvar
+            </button>
+        </div>
+    }
+
+</div>
+

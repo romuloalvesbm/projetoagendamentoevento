@@ -1,0 +1,64 @@
+﻿html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    overflow-x: hidden;
+    background: #ECECEC;
+    padding-right: 0 !important;
+    overflow-y: scroll !important;
+    margin-bottom: 50px;
+}
+
+.cabecalho {
+    height: 90px;    
+    background-image: url('../Style/Image/cabecalho.png');
+    background-repeat: repeat-x;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: white;
+    position: fixed;
+    z-index:2;
+}
+
+.navbar {
+    margin-top: 0;
+    top: 89px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 40px;
+    line-height: 40px; /* Vertically center the text there */
+    background-color: #2e3c49;
+}
+
+body > .container-fluid {
+    padding: 100px 15px 0;
+}
+
+.footer > .container-fluid {
+    padding-right: 15px;
+    padding-left: 15px;
+    text-align: center;
+}
+
+.vertical-center {
+    margin: 0;
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
+@media (max-width: 768px) {
+    .InfoUser {
+        display: none !important;
+    }
+}
+

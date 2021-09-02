@@ -1,0 +1,427 @@
+﻿@model Projeto.Presentation.Areas.AreaRestrita.Models.AgendamentoTurmaCadastroModel
+
+@{
+    Layout = "~/Areas/AreaRestrita/Views/Shared/_Layout.cshtml";
+}
+
+@section styles{
+    <link href="~/css/jquery-ui.min.css" rel="stylesheet" />
+    <link href="~/css/bootstrap-datepicker.min.css" rel="stylesheet" />
+}
+
+@section scripts{
+    <script src="~/js/jquery-ui.min.js"></script>
+    <script src="~/js/bootstrap-datepicker.min.js"></script>
+    <script src="~/js/bootstrap-datepicker.pt-BR.min.js"></script>
+    <script src="~/js/jquery.mask.min.js"></script>
+
+
+    <script>
+
+        var SPMaskBehavior = function (val) {
+            return val.replace(/\D/g, '')[0] === '2' ? 'AE:CD' : 'AB:CD';
+        },
+            spOptions = {
+                onKeyPress: function (val, e, field, options) {
+                    field.mask(SPMaskBehavior.apply({}, arguments), options);
+                },
+                translation: {
+                    "A": { pattern: /[0-2]/, optional: false },
+                    "B": { pattern: /[0-9]/, optional: false },
+                    "C": { pattern: /[0-5]/, optional: false },
+                    "D": { pattern: /[0-9]/, optional: false },
+                    "E": { pattern: /[0-3]/, optional: false }
+                }
+            };
+
+        $('.Clock').mask(SPMaskBehavior, spOptions);
+
+        $('.OnlyNumeric').on('keypress input', function () {
+            var value = $(this).val();
+            value = value.replace(/\D+/, ''); 
+            $(this).val(value);
+        });
+
+        $(".Calendar").datepicker(
+            {
+                format: "dd/mm/yyyy",
+                autoclose: true,
+                todayHighlight: true,
+                changeYear: true,
+                changeMonth: true,
+                language: "pt-BR",
+                clearBtn: true
+            }).on('changeDate', function (ev) {
+                $(this).blur();
+            }).on('focus', function () {
+                $(this).mask('00/00/0000');
+            });
+
+        $(document).ready(function () {
+
+            $("#txtEvento").autocomplete({
+
+                source: function (request, response) {
+
+                    var data = {
+                        Nome: $("#txtEvento").val()
+                    };
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/AreaRestrita/AgendamentoTurma/ListarEvento",
+                        data: data,
+                        success: function (result) {
+                            var indicatorItems = [];
+                            $.each(JSON.parse(result), function (index, item) {
+                                indicatorItems.push({
+                                    idevento: item.IdEvento,
+                                    value: item.Nome,
+                                    label: item.Nome,
+                                    descricaoevento: item.DescricaoEvento
+                                });
+                            });
+                            response(indicatorItems);
+                        },
+                        error: function (ex) {
+                            alert(ex.responseJSON.message);
+                        }
+                    });
+                },
+
+                select: function (index, i) {
+                    $("[id*=hdfIdEvento]").val(i.item.idevento);
+                    $("[id*=txtEvento]").val(i.item.value);
+                    $("[id*=txtDescricaoEvento]").val(i.item.value);
+                },
+
+                change: function (index, i) {
+                    if (i.item == null) {
+                        $(this).val("");
+                        $("[id*=hdfIdEvento]").val("");
+                        $("[id*=txtEvento]").val("");
+                        $("[id*=txtDescricaoEvento]").val("");
+                        return false;
+                    }
+                }
+            });
+
+
+            $("#txtArea").autocomplete({
+
+                source: function (request, response) {
+
+                    var data = {
+                        Nome: $("#txtArea").val()
+                    };
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/AreaRestrita/AgendamentoTurma/ListarArea",
+                        data: data,
+                        success: function (result) {
+                            var indicatorItems = [];
+                            $.each(JSON.parse(result), function (index, item) {
+                                indicatorItems.push({
+                                    idarea: item.IdArea,
+                                    value: item.Nome,
+                                    label: item.Nome
+                                });
+                            });
+                            response(indicatorItems);
+                        },
+                        error: function (ex) {
+                            alert(ex.responseJSON.message);
+                        }
+                    });
+                },
+
+                select: function (index, i) {
+                    $("[id*=hdfIdArea]").val(i.item.idarea);
+                    $("[id*=txtArea]").val(i.item.value);
+                },
+
+                change: function (index, i) {
+                    if (i.item == null) {
+                        $(this).val("");
+                        $("[id*=hdfIdArea]").val("");
+                        $("[id*=txtArea]").val("");
+                        return false;
+                    }
+                }
+            });
+
+
+            $("#txtSala").autocomplete({
+
+                source: function (request, response) {
+
+                    var data = {
+                        Nome: $("#txtSala").val()
+                    };
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/AreaRestrita/AgendamentoTurma/ListarSala",
+                        data: data,
+                        success: function (result) {
+                            var indicatorItems = [];
+                            $.each(JSON.parse(result), function (index, item) {
+                                indicatorItems.push({
+                                    idsala: item.IdSala,
+                                    value: item.Nome + " - " + item.Localidade.Nome,
+                                    label: item.Nome + " - " + item.Localidade.Nome
+                                });
+                            });
+                            response(indicatorItems);
+                        },
+                        error: function (ex) {
+                            alert(ex.responseJSON.message);
+                        }
+                    });
+                },
+
+                select: function (index, i) {
+                    $("[id*=hdfIdSala]").val(i.item.idsala);
+                    $("[id*=txtSala]").val(i.item.value);
+                },
+
+                change: function (index, i) {
+                    if (i.item == null) {
+                        $(this).val("");
+                        $("[id*=hdfIdSala]").val("");
+                        $("[id*=txtSala]").val("");
+                        return false;
+                    }
+                }
+            });
+        });
+    </script>
+}
+
+<div class="jumbotron" style="padding: 10px; background-color: white">
+    <h4>Agendamento de Turma</h4>
+    <hr />
+
+
+    @using (Html.BeginForm())
+    {
+        <!-- campo nome -->
+        <div class="form-group row">
+            <div class="col-md-6">
+                @Html.HiddenFor(model => model.IdEvento,
+                    new
+                    {
+                        @Id = "hdfIdEvento",
+                    })
+                <label>Evento:</label>
+                <div class="input-group">
+                    @Html.TextBoxFor(model => model.NomeEvento,
+                            new
+                            {
+                                @id = "txtEvento",
+                                @class = "form-control "
+                            })
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fa fa-search"></i></span>
+                    </div>
+                </div>
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.IdEvento)
+                </span>
+            </div>
+            <div class="col-md-2">
+                <label>Data Evento:</label>
+                <div class="input-group">
+                    @Html.TextBoxFor(model => model.DataEvento,
+                        new
+                        {
+                            @class = "form-control Calendar",
+                            @placeholder = "Data",
+                            @autocomplete = "off"
+                        })
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fa fa-calendar-alt"></i></span>
+                    </div>
+                </div>
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.DataEvento)
+                </span>
+            </div>
+            <div class="col-md-2">
+                <label>Hora Inicial:</label>
+                <div class="input-group">
+                    @Html.TextBoxFor(model => model.HoraInicial,
+                            new
+                            {
+                                @class = "form-control Clock",
+                                @placeholder = "Hora",
+                                @autocomplete = "off"
+                            })
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fa fa-clock"></i></span>
+                    </div>
+                </div>
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.HoraInicial)
+                </span>
+            </div>
+            <div class="col-md-2">
+                <label>Hora Término:</label>
+                <div class="input-group">
+                    @Html.TextBoxFor(model => model.HoraTermino,
+                            new
+                            {
+                                @class = "form-control Clock",
+                                @placeholder = "Hora",
+                                @autocomplete = "off"
+                            })
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fa fa-clock"></i></span>
+                    </div>
+                </div>
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.HoraTermino)
+                </span>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-md-12">
+                <label>Descrição do Evento:</label>
+                <div class="input-group">
+                    @Html.TextAreaFor(model => model.DescricaoEvento,
+                        new
+                        {
+                            @id = "txtDescricaoEvento",
+                            @readonly = "readonly",
+                            @class = "form-control",
+                            @Rows = "2",
+                            @autocomplete = "off"
+                        })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-md-2">
+                <label>Limite Inscrição:</label>
+                <div class="input-group">
+                    @Html.TextBoxFor(model => model.DataLimiteInscrição,
+                        new
+                        {
+                            @class = "form-control Calendar",
+                            @placeholder = "Data",
+                            @autocomplete = "off"
+                        })
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fa fa-calendar-alt"></i></span>
+                    </div>
+                </div>
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.DataLimiteInscrição)
+                </span>
+            </div>
+            <div class="col-md-3">
+                @Html.HiddenFor(model => model.IdArea,
+                    new
+                    {
+                        @Id = "hdfIdArea",
+                    })
+                <label>Area:</label>
+                <div class="input-group">
+                    @Html.TextBoxFor(model => model.NomeArea,
+                            new
+                            {
+                                @id = "txtArea",
+                                @class = "form-control "
+                            })
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fa fa-search"></i></span>
+                    </div>
+                </div>
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.IdArea)
+                </span>
+            </div>
+            <div class="col-md-3">
+                <label>Descrição Turma:</label>
+                @Html.TextBoxFor(model => model.Turma,
+               new
+               {
+                   @class = "form-control",
+                   @maxlength = "50",
+                   @autocomplete = "off"
+               })
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.Turma)
+                </span>
+            </div>
+            <div class="col-md-4">
+                @Html.HiddenFor(model => model.IdSala,
+                    new
+                    {
+                        @Id = "hdfIdSala",
+                    })
+                <label>Sala:</label>
+                <div class="input-group">
+                    @Html.TextBoxFor(model => model.NomeSala,
+                            new
+                            {
+                                @id = "txtSala",
+                                @class = "form-control "
+                            })
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fa fa-search"></i></span>
+                    </div>
+                </div>
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.IdSala)
+                </span>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-md-2">
+                <label>Participantes:</label>
+                @Html.TextBoxFor(model => model.Parcipantes,
+               new
+               {
+                   @class = "form-control OnlyNumeric",
+                   @maxlength = "10",
+                   @autocomplete = "off",
+                   @type = "number"
+               })
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.Parcipantes)
+                </span>
+            </div>
+            <div class="col-md-2">
+
+                <label>Status:</label>
+                @Html.DropDownListFor(model => model.Status,
+                        Model.lstStatus,
+                        new { @class = "custom-select" })
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.Status)
+                </span>
+            </div>
+        </div>
+
+        <hr />
+
+        <div class="form-group">
+            <button type="submit" id="btnCadastrar" class="btn btn-success btn-sm">
+                <i class="fas fa-save fa-lg"></i> Salvar
+            </button>           
+            <a id="Limpar" class="btn btn-secondary btn-sm" href="/AreaRestrita/AgendamentoTurma/Cadastro">
+                <i class="fas fa-broom fa-lg"></i> Limpar
+            </a>
+            <a id="Consultar" class="btn btn-info btn-sm" href="/AreaRestrita/AgendamentoTurma/Consulta">
+                <i class="fas fa-search fa-lg"></i> Consultar
+            </a>
+        </div>
+    }
+
+</div>
+

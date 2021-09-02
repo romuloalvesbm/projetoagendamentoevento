@@ -1,0 +1,51 @@
+﻿@model Projeto.Presentation.Areas.AreaRestrita.Models.PermissaoCadastroModel
+
+@{
+    Layout = "~/Areas/AreaRestrita/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+
+    <script>
+
+        $('#btnBuscar').click(function () {
+            var ddlValue = $('#ddlPerfil').val();
+            var path = '@Url.Content("/AreaRestrita/Permissao/Edicao/")' + ddlValue
+            $(this).attr("href", path);
+        });
+
+    </script>
+}
+
+<div class="jumbotron" style="padding: 10px; background-color: white">
+    <h4>Permissão</h4>
+    <hr />
+
+
+    @using (Html.BeginForm())
+    {
+        <!-- campo nome -->
+        <div class="form-group row">
+            <div class="col-md-3">
+                <label>Perfil:</label>
+                @Html.DropDownListFor(model => model.IdPerfil,
+                        Model.Perfis,
+                        new
+                             {
+                                 @class = "custom-select",
+                                 @id = "ddlPerfil"
+                             })
+            </div>
+
+            <div class="col-md-1">
+                <a class="btn btn-info btn-sm" style="margin-top: 2.1rem !important" id="btnBuscar">
+                    <i class="fas fa-search fa-lg"></i>
+                </a>
+            </div>
+        </div>
+
+
+    }
+
+</div>
+

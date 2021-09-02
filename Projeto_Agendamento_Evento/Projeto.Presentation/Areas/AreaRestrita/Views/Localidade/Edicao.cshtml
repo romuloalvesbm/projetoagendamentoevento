@@ -1,0 +1,54 @@
+﻿@model Projeto.Presentation.Areas.AreaRestrita.Models.LocalidadeEdicaoModel
+
+@{
+    Layout = "~/Areas/AreaRestrita/Views/Shared/_Layout.cshtml";
+}
+
+<div class="jumbotron" style="padding: 10px; background-color: white">
+    <h4>Edição de Localidade</h4>
+    <hr />
+
+
+    @using (Html.BeginForm())
+    {
+        @Html.HiddenFor(model => model.IdLocalidade);
+
+        <!-- campo nome -->
+        <div class="form-group row">
+            <div class="col-md-4">
+                <label>Nome:</label>
+                @Html.TextBoxFor(model => model.Nome,
+                new
+                {
+                    @class = "form-control",
+                    @maxlength = "50",
+                    @autocomplete = "off"
+                })
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.Nome)
+                </span>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-md-3">
+                @Html.CheckBoxFor(model => model.Desativar) <span>Desativar</span>
+            </div>
+        </div>
+
+        <hr />
+
+        <div class="form-group">
+            <button type="submit" id="Salvar" class="btn btn-success btn-sm" title="Salvar">
+                <i class="fas fa-save fa-lg"></i> Salvar
+            </button>
+            <a id="Consultar" class="btn btn-info btn-sm" href="/AreaRestrita/Localidade/Consulta">
+                <i class="fas fa-search fa-lg"></i> Consultar
+            </a>
+        </div>
+    }
+
+</div>
+
+
+

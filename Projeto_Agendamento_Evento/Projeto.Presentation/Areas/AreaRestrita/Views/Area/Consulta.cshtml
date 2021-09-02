@@ -1,0 +1,176 @@
+﻿@model Projeto.Presentation.Areas.AreaRestrita.Models.AreaConsultaModel
+
+@{
+    Layout = "~/Areas/AreaRestrita/Views/Shared/_Layout.cshtml";
+}
+
+@section styles{
+    <link href="~/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+}
+
+@section scripts{
+    <script src="~/js/jquery.dataTables.min.js"></script>
+    <script src="~/js/dataTables.bootstrap4.min.js"></script>
+    <script>
+
+        $(document).ready(function () {
+
+            var $tr;
+
+            $(".classDelete").click(function (e) {
+                $tr = $(this).closest("tr");
+                $('#myModalConfirmDelete').modal('show');
+            });
+
+            $("#btnConfirmDelete").click(function (e) {
+                var row = $tr.get(0);
+                var id = $tr.find('a:last').data('id');
+
+                var area = {
+                    IdArea: $tr.find('a:last').data('id')
+                };
+
+                $.ajax({
+                    url: "/AreaRestrita/Area/Exclusao",
+                    type: "POST",
+                    data: area,
+                    success: function (result) {
+                        if (result.success) {
+                            var table = $('#tabela_areas').DataTable();
+
+                            table.row(row).remove().draw(false);
+                            MessageCustom('fa-check-circle text-success', result.responseText);
+                        }
+                        else {
+                            MessageCustom('fa-exclamation-circle text-danger', result.message);
+                        }
+                    },
+                    error: function (ex) {
+                        MessageCustom('fa-exclamation-circle text-danger', ex.status);
+                    }
+                });
+            });
+
+            $('#tabela_areas').DataTable({
+                "ordering": true,
+                "pageLength": 5,
+                "lengthMenu": [[5, 10, 25, 50, 100], [5, 10, 25, 50, 100]],
+                "searching": true,
+                "columnDefs": [{
+                    "targets": 'no-sort',
+                    "orderable": false,
+                }],
+                "language": {
+                    "sEmptyTable": "Nenhum registro encontrado",
+                    "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+                    "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
+                    "sInfoFiltered": "(Filtrados de _MAX_ registros)",
+                    "sInfoPostFix": "",
+                    "sInfoThousands": ".",
+                    "sLengthMenu": "_MENU_ resultados por página",
+                    "sLoadingRecords": "Carregando...",
+                    "sProcessing": "Processando...",
+                    "sZeroRecords": "Nenhum resultado foi obtido para a pesquisa realizada.",
+                    "sSearch": "Filtrar registros",
+                    "oPaginate": {
+                        "sNext": "Próximo",
+                        "sPrevious": "Anterior",
+                        "sFirst": "Primeiro",
+                        "sLast": "Último"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": Ordenar colunas de forma ascendente",
+                        "sSortDescending": ": Ordenar colunas de forma descendente"
+                    },
+                    "select": {
+                        "rows": {
+                            "_": "Selecionado %d linhas",
+                            "0": "Nenhuma linha selecionada",
+                            "1": "Selecionado 1 linha"
+                        }
+                    }
+                }
+            });
+        });
+
+    </script>
+}
+
+<div class="jumbotron" style="padding: 10px; background-color: white">
+    <h4>Consulta de Área</h4>
+    <hr />
+
+    @using (Html.BeginForm())
+    {
+        if (Model != null)
+        {
+            var permissaoCadastrar = Model.PerfisPermissoes.Count(x => x.IdPermissao == 2) > 0;
+            var permissaoEditar = Model.PerfisPermissoes.Count(x => x.IdPermissao == 3) > 0;
+            var permissaoExcluir = Model.PerfisPermissoes.Count(x => x.IdPermissao == 4) > 0;
+
+            if (Model.Areas != null)
+            {
+
+                if (Model.Areas.Count > 0)
+                {
+                    <div class="table-responsive">
+                        <table id="tabela_areas" class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width:70%;">Nome</th>
+                                    <th style="width:10%;" class="text-center">Desativado</th>
+                                    <th style="width:10%;" class="text-center no-sort">Operações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Areas)
+                                {
+                                    <tr>
+                                        <td>@item.Nome</td>
+                                        <td class="text-center">@(string.IsNullOrEmpty(item.Desativar) ? "" : "x")</td>
+                                        <td class="text-center">
+
+                                            @if (permissaoEditar)
+                                            {
+                                                <a href="/AreaRestrita/Area/Edicao/@item.IdArea" title="Editar"
+                                                   class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-file-alt fa-sm"></i>
+                                                </a>
+                                            }
+                                            @if (permissaoExcluir)
+                                            {
+                                                <a data-id="@item.IdArea" title="Excluir"
+                                                   class="classDelete btn btn-danger btn-sm">
+                                                    <i class="fas fa-trash-alt fa-sm" style="color:white"></i>
+                                                </a>
+                                            }
+
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <br />
+                }
+                else
+                {
+                    <span>Nenhum resultado foi obtido para a pesquisa realizada.</span>
+                }
+
+                <hr />
+
+                <div class="form-group">
+                    @if (permissaoCadastrar)
+                    {
+                        <a id="Cadastrar" class="btn btn-info btn-sm" href="/AreaRestrita/Area/Cadastro">
+                            <i class="fas fa-file fa-lg"></i> Cadastrar
+                        </a>
+                    }
+                </div>
+            }
+        }
+    }
+</div>
+

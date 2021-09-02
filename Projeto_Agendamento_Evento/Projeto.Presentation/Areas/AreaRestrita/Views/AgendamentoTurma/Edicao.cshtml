@@ -1,0 +1,188 @@
+﻿@model Projeto.Presentation.Areas.AreaRestrita.Models.AgendamentoTurmaEdicaoModel
+
+@{
+    Layout = "~/Areas/AreaRestrita/Views/Shared/_Layout.cshtml";
+}
+
+@section styles{
+    <link href="~/css/jquery-ui.min.css" rel="stylesheet" />
+    <link href="~/css/bootstrap-datepicker.min.css" rel="stylesheet" />
+}
+
+@section scripts{
+    <script src="~/js/jquery-ui.min.js"></script>
+    <script src="~/js/bootstrap-datepicker.min.js"></script>
+    <script src="~/js/bootstrap-datepicker.pt-BR.min.js"></script>
+    <script src="~/js/jquery.mask.min.js"></script>
+
+
+    <script>
+
+        $('.OnlyNumeric').on('keypress input', function () {
+            var value = $(this).val();
+            value = value.replace(/\D+/, '');
+            $(this).val(value);
+        });
+
+    </script>
+}
+
+<div class="jumbotron" style="padding: 10px; background-color: white">
+    <h4>Agendamento de Turma</h4>
+    <hr />
+
+
+    @using (Html.BeginForm())
+    {
+        @Html.HiddenFor(model => model.IdAgendamentoTurma);
+
+        <!-- campo nome -->
+        <div class="form-group row">
+            <div class="col-md-6">
+                <label>Evento:</label>
+                @Html.TextBoxFor(model => model.NomeEvento,
+                    new
+                    {
+                        @readonly = "readonly",
+                        @id = "txtEvento",
+                        @class = "form-control "
+                    })
+            </div>
+            <div class="col-md-2">
+                <label>Data Evento:</label>
+                @Html.TextBoxFor(model => model.DataEvento, "{0:dd/MM/yyyy}",
+                    new
+                    {
+                        @readonly = "readonly",
+                        @class = "form-control",
+                        @placeholder = "Data",
+                        @autocomplete = "off"
+                    })
+            </div>
+            <div class="col-md-2">
+                <label>Hora Inicial:</label>
+                @Html.TextBoxFor(model => model.HoraInicial,
+                    new
+                    {
+                        @readonly = "readonly",
+                        @class = "form-control",
+                        @placeholder = "Hora",
+                        @autocomplete = "off"
+                    })
+            </div>
+            <div class="col-md-2">
+                <label>Hora Término:</label>
+                @Html.TextBoxFor(model => model.HoraTermino,
+                    new
+                    {
+                        @readonly = "readonly",
+                        @class = "form-control",
+                        @placeholder = "Hora",
+                        @autocomplete = "off"
+                    })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-md-12">
+                <label>Descrição do Evento:</label>
+                @Html.TextAreaFor(model => model.DescricaoEvento,
+                    new
+                    {
+                        @id = "txtDescricaoEvento",
+                        @readonly = "readonly",
+                        @class = "form-control",
+                        @Rows = "2",
+                        @autocomplete = "off"
+                    })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-md-2">
+                <label>Limite Inscrição:</label>
+                @Html.TextBoxFor(model => model.DataLimiteInscricao, "{0:dd/MM/yyyy}",
+                    new
+                    {
+                        @readonly = "readonly",
+                        @class = "form-control Calendar",
+                        @placeholder = "Data",
+                        @autocomplete = "off"
+                    })
+            </div>
+            <div class="col-md-3">
+                <label>Area:</label>
+                @Html.TextBoxFor(model => model.NomeArea,
+                    new
+                    {
+                        @readonly = "readonly",
+                        @id = "txtArea",
+                        @class = "form-control "
+                    })
+            </div>
+            <div class="col-md-3">
+                <label>Descrição Turma:</label>
+                @Html.TextBoxFor(model => model.Turma,
+               new
+               {
+                   @readonly = "readonly",
+                   @class = "form-control",
+                   @maxlength = "50",
+                   @autocomplete = "off"
+               })
+            </div>
+            <div class="col-md-4">
+                <label>Sala:</label>
+                @Html.TextBoxFor(model => model.NomeSala,
+                    new
+                    {
+                        @readonly = "readonly",
+                        @id = "txtSala",
+                        @class = "form-control "
+                    })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-md-2">
+                <label>Participantes:</label>
+                @Html.TextBoxFor(model => model.Parcipantes,
+               new
+               {
+                   @class = "form-control OnlyNumeric",
+                   @maxlength = "10",
+                   @autocomplete = "off",
+                   @type = "number"
+               })
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.Parcipantes)
+                </span>
+            </div>
+            <div class="col-md-2">
+
+                <label>Status:</label>
+                @Html.DropDownListFor(model => model.Status,
+                        Model.lstStatus,
+                        new { @class = "custom-select" })
+                <span class="text-danger">
+                    @Html.ValidationMessageFor(model => model.Status)
+                </span>
+            </div>
+        </div>
+
+        <hr />
+
+        <div class="form-group">
+            <button type="submit" id="Salvar" class="btn btn-success btn-sm" title="Salvar">
+                <i class="fas fa-save fa-lg"></i> Salvar
+            </button>
+            <a id="Consultar" class="btn btn-info btn-sm" href="/AreaRestrita/AgendamentoTurma/Consulta">
+                <i class="fas fa-search fa-lg"></i> Consultar
+            </a>
+        </div>
+    }
+
+</div>
+
+
+

@@ -1,0 +1,454 @@
+﻿@model Projeto.Presentation.Areas.AreaRestrita.Models.AgendamentoTurmaConsultaModel
+
+@{
+    Layout = "~/Areas/AreaRestrita/Views/Shared/_Layout.cshtml";
+}
+
+@section styles{
+    <link href="~/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+}
+
+@section scripts{
+    <script src="~/js/jquery.dataTables.min.js"></script>
+    <script src="~/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/js/jquery.mask.min.js"></script>
+    <script>
+
+        $(document).ready(function () {
+
+            var $tr;
+            var $trColaborador;
+            var array = [3, 4, 7];
+
+            $('#tabela_agendamento_turma tfoot th').each(function (i) {
+                var title = $(this).text();
+                if (array.indexOf(i) == -1) {
+                    if (title == "Data")
+                        $(this).html('<input type="text" class="form-control Calendar" placeholder="Data" name="InputPesq' + title + '" />');
+                    else
+                        $(this).html('<input type="text" class="form-control" name="InputPesq' + title + '" />');
+                }
+                else
+                    $(this).html("");
+            });
+
+            $('#tabela_colaborador tfoot th').each(function (i) {
+                if (i < 2) {
+                    var title = $(this).text();
+                    $(this).html('<input type="text" class="form-control" name="InputPesq' + title + '" />');
+                }
+                else
+                    $(this).html("");
+            });
+
+            $('#tabela_agendamento_turma tbody').on('click', '.classDelete', function () {
+                $tr = $(this).closest("tr");
+                $('#myModalConfirmDelete').modal('show');
+            });
+
+            $('#tabela_colaborador tbody').on('click', '.classDelete', function () {
+                $trColaborador = $(this).closest("tr");
+                $('#myModalConfirmDelete').modal('show');
+            });
+
+            $('#tabela_agendamento_turma tbody').on('click', '.classInscrito', function () {
+
+                var agendamentoturma = {
+                    IdAgendamentoTurma: $(this).closest("tr").find('a:last').data('id')
+                };
+
+                var tableColaborador = $('#tabela_colaborador').DataTable({
+                    "autoWidth": false,
+                    "destroy": true, 
+                    "processing": true,
+                    "serverSide": true,
+                    "ordering": true,
+                    "pageLength": 5,
+                    "lengthMenu": [[5], [5]],
+                    "searching": true,
+                    "columnDefs": [{
+                        "targets": 'no-sort',
+                        "orderable": false,
+                    }],
+                    "language": {
+                        "sEmptyTable": "Nenhum registro encontrado",
+                        "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+                        "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
+                        "sInfoFiltered": "(Filtrados de _MAX_ registros)",
+                        "sInfoPostFix": "",
+                        "sInfoThousands": ".",
+                        "sLengthMenu": "_MENU_ resultados por página",
+                        "sLoadingRecords": "Carregando...",
+                        "sProcessing": "Processando...",
+                        "sZeroRecords": "Nenhum resultado foi obtido para a pesquisa realizada.",
+                        "sSearch": "Filtrar registros",
+                        "oPaginate": {
+                            "sNext": "Próximo",
+                            "sPrevious": "Anterior",
+                            "sFirst": "Primeiro",
+                            "sLast": "Último"
+                        },
+                        "oAria": {
+                            "sSortAscending": ": Ordenar colunas de forma ascendente",
+                            "sSortDescending": ": Ordenar colunas de forma descendente"
+                        },
+                        "select": {
+                            "rows": {
+                                "_": "Selecionado %d linhas",
+                                "0": "Nenhuma linha selecionada",
+                                "1": "Selecionado 1 linha"
+                            }
+                        }
+                    },
+                    "ajax":
+                    {
+                        "url": "/AreaRestrita/AgendamentoTurma/GetColaborador",
+                        "method": "POST",
+                        "data": agendamentoturma,
+                        "error": function (e) {
+                            //Fecha o box processando.
+                            $('.dataTables_processing', $('#tabela_colaborador').closest('.dataTables_wrapper')).hide();
+                            MessageCustom('fa-exclamation-circle text-danger', e.responseJSON.message);
+                        }
+                    },
+                    "columns": [
+                        {
+                            "className": "text-center",
+                            "data": "chapa"
+                        },
+                        { "data": "nome" },
+                        {
+                            "className": "text-center",
+                            "data": null, render: function (data, type, row) {
+                                return '<a data-id=' + row.idAgeCol + ' title="Excluir" class="classDelete btn btn-danger btn-sm"> <i class="fas fa-trash-alt fa-sm" style="color:white"></i></a>'
+
+                            }
+                        }
+                    ],
+                    initComplete: function () {
+
+                        // Apply the search (Colunas que possuem filtro)
+                        this.api().columns().every(function () {
+                            var that = this;
+
+                            $('input', this.footer()).on('keydown', function (evento) {
+
+                                //Pesquisar em varios inputs apos enter
+                                if (evento.keyCode == 13) {
+
+                                    $.each(tableColaborador.columns().footer(), function (index, value) {
+                                        //Validacao se a tag input existe
+                                        if (value.getElementsByTagName('input').length) {
+                                            //Pega o valor do input
+                                            var inputBoxVal = value.getElementsByTagName('input')[0].value;
+                                            tableColaborador.column(index).search(inputBoxVal);
+                                        }
+                                    });
+
+                                    tableColaborador.draw();
+                                }
+                            });
+                        });
+                    }
+                });
+
+                $('#myModalListColaborador').modal('show');
+            });
+
+            $("#btnConfirmDelete").click(function () {
+
+                if ($('#myModalListColaborador').is(':visible'))
+                {
+                    var agendamentocolaborador = {
+                        IdAgeCol: $trColaborador.find('a:first').data('id')
+                    };
+
+                    $.ajax({
+                        url: "/AreaRestrita/AgendamentoTurma/RemoverColaborador",
+                        type: "POST",
+                        data: agendamentocolaborador,
+                        success: function (result) {
+                            if (result.success) {
+                                var tableColaborador = $('#tabela_colaborador').DataTable();
+
+                                tableColaborador.row(row).remove().draw(false);
+                                MessageCustom('fa-check-circle text-success', result.responseText);
+                            }
+                            else {
+                                MessageCustom('fa-exclamation-circle text-danger', result.message);
+                            }
+                        },
+                        error: function (result) {
+                            MessageCustom('fa-exclamation-circle text-danger', ex.status);
+                        }
+                    });
+
+                    table.ajax.reload(); //Atualizar a tabela de agendamento turma
+                }
+                else
+                {
+                    var row = $tr.get(0);
+                    var id = $tr.find('a:last').data('id');
+
+                    var agendamentoturma = {
+                        IdAgendamentoTurma: $tr.find('a:last').data('id')
+                    };
+
+                    $.ajax({
+                        url: "/AreaRestrita/AgendamentoTurma/Exclusao",
+                        type: "POST",
+                        data: agendamentoturma,
+                        success: function (result) {
+                            if (result.success) {
+                                var table = $('#tabela_agendamento_turma').DataTable();
+
+                                table.row(row).remove().draw(false);
+                                MessageCustom('fa-check-circle text-success', result.responseText);
+                            }
+                            else {
+                                MessageCustom('fa-exclamation-circle text-danger', result.message);
+                            }
+                        },
+                        error: function (result) {
+                            MessageCustom('fa-exclamation-circle text-danger', ex.status);
+                        }
+                    });
+                }
+            });
+
+            var table = $('#tabela_agendamento_turma').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ordering": true,
+                "pageLength": 5,
+                "lengthMenu": [[5, 10, 25, 50, 100], [5, 10, 25, 50, 100]],
+                "searching": true,
+                "columnDefs": [{
+                    "targets": 'no-sort',
+                    "orderable": false,
+                }],
+                "language": {
+                    "sEmptyTable": "Nenhum registro encontrado",
+                    "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+                    "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
+                    "sInfoFiltered": "(Filtrados de _MAX_ registros)",
+                    "sInfoPostFix": "",
+                    "sInfoThousands": ".",
+                    "sLengthMenu": "_MENU_ resultados por página",
+                    "sLoadingRecords": "Carregando...",
+                    "sProcessing": "Processando...",
+                    "sZeroRecords": "Nenhum resultado foi obtido para a pesquisa realizada.",
+                    "sSearch": "Filtrar registros",
+                    "oPaginate": {
+                        "sNext": "Próximo",
+                        "sPrevious": "Anterior",
+                        "sFirst": "Primeiro",
+                        "sLast": "Último"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": Ordenar colunas de forma ascendente",
+                        "sSortDescending": ": Ordenar colunas de forma descendente"
+                    },
+                    "select": {
+                        "rows": {
+                            "_": "Selecionado %d linhas",
+                            "0": "Nenhuma linha selecionada",
+                            "1": "Selecionado 1 linha"
+                        }
+                    }
+                },
+                "ajax":
+                {
+                    "url": "/AreaRestrita/AgendamentoTurma/GetAgendamentoTurma",
+                    "method": "POST",
+                    "error": function (e) {
+                        //Fecha o box processando.
+                        $('.dataTables_processing', $('#tabela_agendamento_turma').closest('.dataTables_wrapper')).hide();
+                        MessageCustom('fa-exclamation-circle text-danger', e.responseJSON.message);
+                    }
+                },
+                "columns": [
+                    { "data": "evento" },
+                    { "data": "sala" },
+                    {
+                        "data": "data",
+                        "className": "text-center",
+                        "render": function (data) {
+
+                            var date = new Date(data),
+                                dia = date.getDate().toString().padStart(2, '0'),
+                                mes = (date.getMonth() + 1).toString().padStart(2, '0'), //+1 pois no getMonth Janeiro começa com zero.
+                                ano = date.getFullYear();
+
+                            return dia + "/" + mes + "/" + ano;
+                        }
+                    },
+                    {
+                        "data": "horaInicio",
+                        "title": "",
+                        "className": "text-center",
+                        "orderable": false,
+                        "render": function (horaInicio) {
+                            var a = horaInicio.split(':');
+                            return a[0] + ":" + a[1];
+                        }
+                    },
+                    {
+                        "data": "horaTermino",
+                        "title": "",
+                        "className": "text-center",
+                        "orderable": false,
+                        "render": function (horaTermino) {
+                            var a = horaTermino.split(':');
+                            return a[0] + ":" + a[1];
+                        }
+                    },
+                    {
+                        "title": "Inscrito",
+                        "className": "text-center",
+                        "data": "totalColaborador", render: function (data, type, row) {
+                            return '<a class="classInscrito font-weight-bold text-warning" style="cursor:pointer"> ' + row.totalColaborador + '</a>'
+                        }
+                    },
+                    {
+                        "data": "status",
+                        "className": "text-center"
+                    },
+                    {
+                        "className": "text-center",
+                        "data": null, render: function (data, type, row) {
+                            return '<a href="/AreaRestrita/AgendamentoTurma/Edicao/' + row.idAgeTurma + '" title="Editar" class="btn btn-primary btn-sm"> <i class="fas fa-file-alt fa-sm"></i> </a> ' +
+                                '<a data-id=' + row.idAgeTurma + ' title="Excluir" class="classDelete btn btn-danger btn-sm"> <i class="fas fa-trash-alt fa-sm" style="color:white"></i></a>'
+
+                        }
+                    }
+                ],
+                initComplete: function () {
+
+                    // Apply the search (Colunas que possuem filtro)
+                    this.api().columns().every(function () {
+                        var that = this;
+
+                        $('input', this.footer()).on('keydown', function (evento) {
+
+                            //Pesquisar em varios inputs apos enter
+                            if (evento.keyCode == 13) {
+
+                                $.each(table.columns().footer(), function (index, value) {
+                                    //Validacao se a tag input existe
+                                    if (value.getElementsByTagName('input').length) {
+                                        //Pega o valor do input
+                                        var inputBoxVal = value.getElementsByTagName('input')[0].value;
+                                        table.column(index).search(inputBoxVal);
+                                    }
+                                });
+
+                                table.draw();
+                            }
+                        });
+                    });
+                }
+            });
+
+            $(".Calendar").mask("00/00/0000", { placeholder: 'dd/mm/yyyy' });
+        });
+
+    </script>
+}
+
+<style type="text/css">
+    .dataTables_filter {
+        display: none;
+    }
+    .dataTables_length {
+        display: none;
+    }
+</style>
+
+<div class="jumbotron" style="padding: 10px; background-color: white">
+    <h4>Consulta de Agendamento Turma</h4>
+    <hr />
+
+    @using (Html.BeginForm())
+    {
+
+        <div class="table-responsive">
+            <table id="tabela_agendamento_turma" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th style="width:25%;">Nome</th>
+                        <th style="width:15%;">Sala</th>
+                        <th style="width:10%;" class="text-center">Data</th>
+                        <th style="width:5%;" class="text-center">horaInicio</th>
+                        <th style="width:5%;" class="text-center">horaTermino</th>
+                        <th style="width:5%;" class="text-center">TotalColaborador</th>
+                        <th style="width:10%;" class="text-center">Status</th>
+                        <th style="width:10%;" class="text-center no-sort">Operações</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Sala</th>
+                        <th>Data</th>
+                        <th>horaInicio</th>
+                        <th>horaTermino</th>
+                        <th>TotalColaborador</th>
+                        <th>Status</th>
+                        <th>Operações</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <hr />
+
+        <div class="form-group">
+            <a id="Cadastrar" class="btn btn-info btn-sm" href="/AreaRestrita/AgendamentoTurma/Cadastro">
+                <i class="fas fa-file fa-lg"></i> Cadastrar
+            </a>
+        </div>
+
+        <div id="myModalListColaborador" class="small-fo modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="myModalLabel">Listagem de Colaboradores</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table id="tabela_colaborador" class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th style="width:25%;">Chapa</th>
+                                        <th style="width:65%;">Nome</th>
+                                        <th style="width:10%;" class="text-center no-sort">Operações</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>Chapa</th>
+                                        <th>Sala</th>
+                                        <th>Operações</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+
+

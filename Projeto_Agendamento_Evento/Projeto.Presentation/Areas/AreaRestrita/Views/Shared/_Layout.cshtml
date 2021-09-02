@@ -1,0 +1,208 @@
+﻿@using Newtonsoft.Json
+@using Projeto.Presentation.Models
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Sistema de Agendamento</title>
+
+    <!-- folha de estilos CSS -->
+    <link href="~/css/bootstrap.css" rel="stylesheet" />
+    <link href="~/css/StyleTemplate.css" rel="stylesheet" />
+    <link href="~/css/fontawesome.min.css" rel="stylesheet" />
+    <link href="~/css/regular.min.css" rel="stylesheet" />
+    <link href="~/css/solid.min.css" rel="stylesheet" />
+
+    @RenderSection("styles", required: false)
+
+    <style type="text/css">
+        .popover {
+            max-width: 100%;
+        }
+
+        .InfoUser {
+            width: 10%;
+            text-align: right;
+            padding-right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+    </style>
+
+</head>
+<body>
+    <header>
+        <div class="container-fluid cabecalho">
+            <div class="row vertical-center">
+                <div style="padding-left: 15px; width: 90%">
+                    @*<img alt="Logo-MAN" src="~/Style/Image/Logo_Topo.png" class="img-fluid" />*@
+                </div>
+                <div class="InfoUser">
+                    <a class="btn" data-toggle="popover" data-placement="left" data-trigger="hover"
+                       title="Informação do Sistema" data-content="">
+                        <img alt="InfoUser" width="40" height="40" src="~/Style/Image/Info_user.png" />
+                    </a>
+                    <div class="pop-inn" style="display:none;">
+                        <div class='row'>
+                            <div class='col-md-12'>
+                                @{
+                                    var usuario = JsonConvert.DeserializeObject<UserModel>(User.Identity.Name);
+                                }
+                                <p> <strong>@usuario.Nome.ToUpper()</strong> </p>
+                                <p>Perfil:  <strong>@usuario.Perfil</strong> </p>
+                                <p>Acesso: <strong>@usuario.Acesso</strong>  </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Fixed navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/AreaRestrita/Home/Index">Menu Principal</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuCadastro" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Cadastro
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuCadastro">
+                                <a class="dropdown-item" href="/AreaRestrita/Area/Cadastro">Área</a>
+                                <a class="dropdown-item" href="/AreaRestrita/Evento/Cadastro">Evento</a>
+                                <a class="dropdown-item" href="/AreaRestrita/Localidade/Cadastro">Localidade</a>
+                                <a class="dropdown-item" href="/AreaRestrita/Sala/Cadastro">Sala</a>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuAgendamento" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Agendamento
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuAgendamento">
+                                <a class="dropdown-item" href="/AreaRestrita/AgendamentoTurma/Cadastro">Turma</a>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuControle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Controle
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuControle">
+                                <a class="dropdown-item" href="/AreaRestrita/Permissao/Cadastro">Permissão</a>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Account/Logout">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Begin page content -->
+    <main role="main" class="container-fluid">
+
+        @RenderBody()
+
+        <div id="myModalInfo" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="myModalLabel">Informação do Sistema</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div id="divModalInfoBody" class="modal-body">
+
+                        @if (TempData["MensagemSucesso"] != null)
+                        {
+                            <span class="fa fa-check-circle text-success"></span>
+                            <span>@TempData["MensagemSucesso"]</span>
+                        }
+                        else if (TempData["MensagemErro"] != null)
+                        {
+                            <span class="fa fa-exclamation-circle text-danger"></span>
+                            <span>@TempData["MensagemErro"]</span>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="myModalConfirmDelete" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="myModalLabel">Informação do Sistema</h5>
+                    </div>
+                    <div class="modal-body">
+                        <span>Deseja excluir o registro?</span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+                        <a id="btnConfirmDelete" class="btn btn-danger btn-sm text-white" data-dismiss="modal">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        <div class="container-fluid">
+            <span class="text-muted">Sistema XXX - © Copyright 2020 - Todos os direitos reservados.</span>
+        </div>
+    </footer>
+
+    <!-- arquivos de extensão JS -->
+    <script src="~/js/jquery-3.4.1.min.js"></script>
+    <script src="~/js/popper.min.js"></script>
+    <script src="~/js/bootstrap.js"></script>
+    <script src="~/js/fontawesome.min.js"></script>
+    <script src="~/js/regular.js"></script>
+    <script src="~/js/solid.js"></script>
+
+    @RenderSection("scripts", required: false)
+
+    <script type="text/javascript">
+
+        var msgSucesso = '@TempData["MensagemSucesso"]';
+        var msgErro = '@TempData["MensagemErro"]';
+
+        if (msgSucesso.length || msgErro.length) {
+            $('#myModalInfo').modal('show');
+        }
+
+        $('form').on('reset', function () {
+            $("input[type='hidden']", $(this)).val('');
+        });
+
+        $(function () {
+            $('[data-toggle="popover"]').popover({
+                html: true,
+                content: function () {
+                    return $('.pop-inn').html();
+                }
+            });
+        })
+
+        function MessageCustom(style, msg) {
+            document.querySelector('#divModalInfoBody').innerHTML = '<span class="fa ' + style + '"></span> <span>' + msg + '</span>';
+            $('#myModalInfo').modal('show');
+        }
+
+    </script>
+</body>
+</html>
